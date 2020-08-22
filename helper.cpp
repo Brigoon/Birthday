@@ -30,84 +30,108 @@ namespace BirthdaysAreFun
 		int daysUpToYear = calcDaysUpToYear(birthdayCalc);
 		int daysUpToMonth = calcDaysUpToMonth(birthdayCalc);
 
-		int totalDays = daysUpToYear + daysUpToMonth + birthdayCalc.getDay();
+		// Need to subtract 1 since Day 0 is 01/01/2000 (as opposed to Day 1).
+		int totalDays = daysUpToYear + daysUpToMonth + birthdayCalc.getDay() - 1;
 
 		finalDayOfTheWeek(birthdayCalc, totalDays);
 	}
 
 	int calcDaysUpToYear(BirthdayCalc& birthdayCalc_c)
 	{
-		int years = birthdayCalc_c.getYear() - 1;
-		int totalDays = years * daysPerYear;
-		int leapDays = (birthdayCalc_c.getYear() / leapYearNum) 
-			- (birthdayCalc_c.getYear() / dumbLeapYearNum);
-		totalDays += leapDays;
+		// Setting everything to 2000 as reference.
+		int yearsToCount = birthdayCalc_c.getYear() - 2000;
 
-		return totalDays;
+		// Finding how many days to account for leap years
+		// for the 4 year pattern.
+		int leapDays = yearsToCount / leapYearNum;
+
+		// Subtracting days caused by the 100 year pattern.
+		leapDays -= yearsToCount / dumbLeapYearNum;
+
+		// Adding days caused by the 400 year pattern.
+		leapDays += yearsToCount / extraDumbLeapYearNum;
+
+		// Have to count 2000 as a leap year. When it is a leap year,
+		// yearsToCount will be divisible by 4 so we don't want to add.
+		if (yearsToCount > 0 && !birthdayCalc_c.isLeapYear())
+			++leapDays;
+
+		return (yearsToCount * 365) + leapDays;
 	}
 
 	int calcDaysUpToMonth(BirthdayCalc& birthdayCalc_c)
 	{
 		int totalDays = 0;
 
+		// Simply count the days from the beginning of the year
+		// to the end of the month before the specified month.
 		switch (birthdayCalc_c.getMonth())
 		{
 			case 1:
 			{
-				totalDays += 31;
+				break;
 			}
 			case 2:
 			{
-				if ((birthdayCalc_c.getYear() % leapYearNum == 0) &&
-					(birthdayCalc_c.getYear() % dumbLeapYearNum != 0))
-				{
-					totalDays += 29;
-				}
-				else
-				{
-					totalDays += 28;
-				}
+				totalDays = DaysPerMonth::JANUARY;
+				break;
 			}
 			case 3:
 			{
-				totalDays += 31;
+				totalDays = DaysPerMonth::FEBRUARY;
+				break;
 			}
 			case 4:
 			{
-				totalDays += 30;
+				totalDays = DaysPerMonth::MARCH;
+				break;
 			}
 			case 5:
 			{
-				totalDays += 31;
+				totalDays = DaysPerMonth::APRIL;
+				break;
 			}
 			case 6:
 			{
-				totalDays += 30;
+				totalDays = DaysPerMonth::MAY;
+				break;
 			}
 			case 7:
 			{
-				totalDays += 31;
+				totalDays = DaysPerMonth::JUNE;
+				break;
 			}
 			case 8:
 			{
-				totalDays += 31;
+				totalDays = DaysPerMonth::JULY;
+				break;
 			}
 			case 9:
 			{
-				totalDays += 30;
+				totalDays = DaysPerMonth::AUGUST;
+				break;
 			}
 			case 10:
 			{
-				totalDays += 31;
+				totalDays = DaysPerMonth::SEPTEMBER;
+				break;
 			}
 			case 11:
 			{
-				totalDays += 30;
+				totalDays = DaysPerMonth::OCTOBER;
+				break;
 			}
 			case 12:
 			{
-				totalDays += 31;
+				totalDays = DaysPerMonth::NOVEMBER;
+				break;
 			}
+		}
+
+		// Determine if we need to add a day for leap year.
+		if (birthdayCalc_c.isLeapYear() && birthdayCalc_c.getMonth() > 2)
+		{
+			totalDays += 1;
 		}
 
 		return totalDays;
@@ -115,7 +139,8 @@ namespace BirthdaysAreFun
 
 	void finalDayOfTheWeek(BirthdayCalc& birthdayCalc_c, int totalDays)
 	{
-		int dayOfWeek_i32 = totalDays % daysPerWeek;
+		// 01/01/2000 is on a Saturday so we need to offset our totalDays
+		int dayOfWeek_i32 = (totalDays + 6) % 7;
 		
 		switch (dayOfWeek_i32)
 		{
@@ -196,6 +221,18 @@ namespace BirthdaysAreFun
 	void BirthdayCalc::setDayOfWeek(std::string str)
 	{
 		m_dayOfWeek_str = str;
+	}
+
+	bool BirthdayCalc::isLeapYear()
+	{
+		if ( ((m_year_i32 % leapYearNum == 0) &&
+				(m_year_i32 % dumbLeapYearNum != 0))
+			||
+			(m_year_i32 % extraDumbLeapYearNum == 0) )
+		{
+			return true;
+		}
+		return false;
 	}
 
 	void BirthdayCalc::printDate()
