@@ -1,3 +1,5 @@
+#!/bin/bash
+
 time ./Birthday.exe 09/11/2020
 time ./Birthday.exe 08/12/2020
 time ./Birthday.exe 01/01/2000
